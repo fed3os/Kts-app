@@ -2,9 +2,10 @@ import streamlit as st
 from datetime import datetime
 import pandas as pd
 import io
+import plotly.express as px
 
 # --- 1. Page Configuration ---
-st.set_page_config(page_title="KTS Ultimate System", layout="centered")
+st.set_page_config(page_title="KTS Legend | Ahmed Mugali", layout="wide")
 
 # --- 2. Royal Neon Styling (CSS) ---
 st.markdown("""
@@ -20,162 +21,184 @@ st.markdown("""
     .st-expander { background-color: rgba(0, 255, 204, 0.05) !important; border: 1px solid #00ffcc !important; border-radius: 15px !important; margin-bottom: 10px !important; }
     label { color: #ffffff !important; font-size: 16px !important; font-weight: bold !important; text-shadow: 2px 2px 4px #000; }
     .stNumberInput input, .stTextInput input { background-color: #111 !important; color: #00ffcc !important; border: 1px solid #00ffcc !important; font-size: 18px !important; border-radius: 10px !important; }
-    .neon-card { background: rgba(0,255,204,0.1); border: 2px solid #00ffcc; border-radius: 20px; padding: 25px; text-align: center; margin: 20px 0; box-shadow: 0 0 20px rgba(0, 255, 204, 0.2); }
-    .stButton>button { width: 100%; height: 75px; background: linear-gradient(45deg, #00ffcc, #007bff) !important; color: #000 !important; font-weight: bold; font-size: 26px; border-radius: 15px; box-shadow: 0 0 25px #00ffcc; border: none !important; }
-    h3 { color: #00ffcc !important; border-bottom: 1px solid #00ffcc; padding-bottom: 5px; margin-top: 10px; }
+    .neon-card { background: rgba(0,255,204,0.1); border: 2px solid #00ffcc; border-radius: 20px; padding: 25px; text-align: center; margin: 20px 0; box-shadow: 0 0 25px rgba(0, 255, 204, 0.3); }
+    .stButton>button { width: 100%; height: 75px; background: linear-gradient(45deg, #00ffcc, #007bff) !important; color: #000 !important; font-weight: bold; font-size: 26px; border-radius: 15px; box-shadow: 0 0 25px #00ffcc; border: none !important; cursor: pointer; }
+    h3 { color: #00ffcc !important; border-bottom: 2px solid #00ffcc; padding-bottom: 5px; margin-top: 15px; }
     </style>
     """, unsafe_allow_html=True)
 
 # --- 3. Header ---
-st.markdown(f"<div class='shiny-text'>{datetime.now().strftime('%I:%M %p')}</div>", unsafe_allow_html=True)
-st.markdown('<h1 class="shiny-text" style="font-size: 55px; margin-bottom:0;">KTS RIG MOVE</h1>', unsafe_allow_html=True)
-st.markdown("<p style='text-align:center; color:white; font-size:18px;'>Exclusively Prepared by Ahmed Mugali © 2026</p>", unsafe_allow_html=True)
+st.markdown(f"<div class='shiny-text'>{datetime.now().strftime('%I:%M:%S %p')}</div>", unsafe_allow_html=True)
+st.markdown('<h1 class="shiny-text" style="font-size: 55px; margin-bottom:0;">KTS RIG MOVE MASTER</h1>', unsafe_allow_html=True)
+st.markdown("<p style='text-align:center; color:white; font-size:18px;'>Professional Logistics Analytics by Ahmed Mugali © 2026</p>", unsafe_allow_html=True)
 
 st.write("---")
 
-# --- 4. Project Basics ---
-rig_name = st.text_input("Rig Name / Number", placeholder="e.g. Rig 456")
-location_name = st.text_input("Destination Location", placeholder="e.g. Haradh")
-dist = st.number_input("Rig Move Distance (KM)", value=0)
-d_price = st.number_input("Diesel Price (Litre)", value=1.70, format="%.2f")
+# --- 4. Main Settings ---
+col_m1, col_m2, col_m3 = st.columns(3)
+rig_name = col_m1.text_input("Rig Name / ID", placeholder="e.g. Rig-101")
+dist = col_m2.number_input("One-Way Distance (KM)", value=0, help="Program will multiply by 2 for Round Trip fuel.")
+d_price = col_m3.number_input("Diesel Price (Litre)", value=1.70, format="%.2f")
 
-st.write("---")
-
-# --- SECTION 1: RIG MOVE (The Transport Phase) ---
-with st.expander("➕ SECTION 1: RIG MOVE (Fleet & Fleet Support)"):
-    col1, col2 = st.columns(2)
-    with col1:
+# --- SECTION 1: RIG MOVE ---
+with st.expander("➕ SECTION 1: RIG MOVE (Fleet & Support)"):
+    c1, c2 = st.columns(2)
+    with c1:
         st.write("### Transport Fleet")
-        n_lowbed = st.number_input("Lowbed Quantity", value=0, key="lb_q")
-        p_lowbed = st.number_input("Lowbed Rate (Trip)", value=0, key="lb_p")
-        st.write("---")
-        n_flat_move = st.number_input("Flatbed Move Qty", value=0, key="fm_q")
-        p_flat_move = st.number_input("Flatbed Move Rate", value=0, key="fm_p")
-    with col2:
+        n_lb = st.number_input("Lowbed Quantity", 0, key="n_lb")
+        p_lb = st.number_input("Lowbed Rate (Trip)", 0, key="p_lb")
+        n_fb = st.number_input("Flatbed Move Qty", 0, key="n_fb")
+        p_fb = st.number_input("Flatbed Rate (Trip)", 0, key="p_fb")
+    with c2:
         st.write("### Workshop & Tanker")
-        n_workshop = st.number_input("Workshop Team Qty", value=0, key="ws_q")
-        d_workshop = st.number_input("Workshop Days", value=0, key="ws_d")
-        p_workshop = st.number_input("Workshop Day Rate", value=0, key="ws_p")
+        n_ws = st.number_input("Workshop Team Qty", 0, key="n_ws")
+        d_ws = st.number_input("Workshop Days", 0, key="d_ws")
+        p_ws = st.number_input("Workshop Day Rate", 0, key="p_ws")
         st.write("---")
-        n_tanker = st.number_input("Diesel Tanker Qty", value=0, key="dt_q")
-        d_tanker = st.number_input("Tanker Days", value=0, key="dt_d")
-        p_tanker = st.number_input("Tanker Rate", value=0, key="dt_p")
-        f_tanker = st.number_input("Tanker Fuel (L/Day)", value=0, key="dt_f")
+        n_dt = st.number_input("Diesel Tanker Qty", 0, key="n_dt")
+        d_dt = st.number_input("Tanker Days", 0, key="d_dt")
+        p_dt = st.number_input("Tanker Rate", 0, key="p_dt")
+        f_dt = st.number_input("Tanker Fuel (L/Day)", 0, key="f_dt")
 
-# --- SECTION 2: OLD LOCATION (Loadout Phase) ---
-with st.expander("➕ SECTION 2: OLD LOCATION (Loadout)"):
-    col3, col4 = st.columns(2)
-    with col3:
-        st.write("### Equipment")
-        n_crane_old = st.number_input("Crane Old Qty", value=0, key="co_q")
-        d_crane_old = st.number_input("Crane Old Days", value=0, key="co_d")
-        p_crane_old = st.number_input("Crane Old Rate", value=0, key="co_p")
-        f_crane_old = st.number_input("Crane Fuel (L/Day)", value=225, key="co_f")
+# --- SECTION 2: OLD LOCATION ---
+with st.expander("➕ SECTION 2: OLD LOCATION (Loadout Phase)"):
+    c3, c4 = st.columns(2)
+    with c3:
+        st.write("### Heavy Equipment")
+        n_co = st.number_input("Crane Old Qty", 0, key="n_co")
+        d_co = st.number_input("Crane Days (Old)", 0, key="d_co")
+        p_co = st.number_input("Crane Rate", 0, key="p_co")
+        f_co = st.number_input("Crane Fuel (L/Day)", 225, key="f_co")
         st.write("---")
-        n_loader_old = st.number_input("Loader/Forklift Old Qty", value=0, key="lo_q")
-        d_loader_old = st.number_input("Loader Days", value=0, key="lo_d")
-        p_loader_old = st.number_input("Loader Rate", value=0, key="lo_p")
-        f_loader_old = st.number_input("Loader Fuel (L/Day)", value=225, key="lo_f")
-    with col4:
+        n_lo = st.number_input("Loader/Forklift Old Qty", 0, key="n_lo")
+        d_lo = st.number_input("Loader Days (Old)", 0, key="d_lo")
+        p_lo = st.number_input("Loader Rate", 0, key="p_lo")
+        f_lo = st.number_input("Loader Fuel (L/Day)", 225, key="f_lo")
+    with c4:
         st.write("### Personnel (Old Loc)")
-        n_tp_old = st.number_input("Truck Pusher (Old) Qty", value=0, key="tpo_q")
-        d_tp_old = st.number_input("TP Days", value=0, key="tpo_d")
-        p_tp_old = st.number_input("TP Day Rate", value=0, key="tpo_p")
-        st.write("---")
-        n_safety_old = st.number_input("Safety Man (Old) Qty", value=0, key="smo_q")
-        d_safety_old = st.number_input("Safety Days", value=0, key="smo_d")
-        p_safety_old = st.number_input("Safety Day Rate", value=0, key="smo_p")
-        st.write("---")
-        n_rigger_old = st.number_input("Rigger (Old) Qty", value=0, key="ro_q")
-        d_rigger_old = st.number_input("Rigger Days", value=0, key="ro_d")
-        p_rigger_old = st.number_input("Rigger Day Rate", value=0, key="ro_p")
+        n_tpo = st.number_input("Truck Pusher (Old) Qty", 0, key="n_tpo")
+        d_tpo = st.number_input("TP Days (Old)", 0, key="d_tpo")
+        p_tpo = st.number_input("TP Day Rate", 0, key="p_tpo")
+        n_so = st.number_input("Safety Man (Old) Qty", 0, key="n_so")
+        d_so = st.number_input("Safety Days (Old)", 0, key="d_so")
+        p_so = st.number_input("Safety Day Rate", 0, key="p_so")
+        n_ro = st.number_input("Rigger (Old) Qty", 0, key="n_ro")
+        d_ro = st.number_input("Rigger Days (Old)", 0, key="d_ro")
+        p_ro = st.number_input("Rigger Day Rate", 0, key="p_ro")
 
-# --- SECTION 3: NEW LOCATION & RIG UP (Offload Phase) ---
-with st.expander("➕ SECTION 3: NEW LOCATION (Offload & Rig Up)"):
-    col5, col6 = st.columns(2)
-    with col5:
+# --- SECTION 3: NEW LOCATION & RIG UP ---
+with st.expander("➕ SECTION 3: NEW LOCATION & RIG UP (Offload Phase)"):
+    c5, c6 = st.columns(2)
+    with c5:
         st.write("### Rig Up Team")
-        n_crane_rigup = st.number_input("Crane Rig-Up Qty", value=0, key="cru_q")
-        d_crane_rigup = st.number_input("Crane Rig-Up Days", value=0, key="cru_d")
-        p_crane_rigup = st.number_input("Crane Rig-Up Rate", value=0, key="cru_p")
-        f_crane_rigup = st.number_input("Fuel (L/Day)", value=225, key="cru_f")
+        n_cru = st.number_input("Crane Rig-Up Qty", 0, key="n_cru")
+        d_cru = st.number_input("Crane Days (Rig-Up)", 0, key="d_cru")
+        p_cru = st.number_input("Crane Rate (Rig-Up)", 0, key="p_cru")
+        f_cru = st.number_input("Fuel (L/Day)", 225, key="f_cru")
         st.write("---")
-        n_loader_rigup = st.number_input("Loader Rig-Up Qty", value=0, key="lru_q")
-        d_loader_rigup = st.number_input("Loader Rig-Up Days", value=0, key="lru_d")
-        p_loader_rigup = st.number_input("Loader Rig-Up Rate", value=0, key="lru_p")
-        f_loader_rigup = st.number_input("Fuel (L/Day)", value=225, key="lru_f")
-    with col6:
-        st.write("### New Location Support")
-        n_crane_new = st.number_input("Crane New Loc Qty", value=0, key="cnl_q")
-        d_crane_new = st.number_input("Crane New Loc Days", value=0, key="cnl_d")
-        p_crane_new = st.number_input("Crane New Loc Rate", value=0, key="cnl_p")
-        f_crane_new = st.number_input("Fuel (L/Day)", value=225, key="cnl_f")
+        n_lru = st.number_input("Loader Rig-Up Qty", 0, key="n_lru")
+        d_lru = st.number_input("Loader Days (Rig-Up)", 0, key="d_lru")
+        p_lru = st.number_input("Loader Rate (Rig-Up)", 0, key="p_lru")
+        f_lru = st.number_input("Fuel (L/Day)", 225, key="f_lru")
+    with c6:
+        st.write("### New Loc Equipment")
+        n_cnl = st.number_input("Crane New Loc Qty", 0, key="n_cnl")
+        d_cnl = st.number_input("Crane Days (New Loc)", 0, key="d_cnl")
+        p_cnl = st.number_input("Crane Rate (New Loc)", 0, key="p_cnl")
+        f_cnl = st.number_input("Fuel (L/Day)", 225, key="f_cnl")
         st.write("---")
-        n_loader_new = st.number_input("Loader New Loc Qty", value=0, key="lnl_q")
-        d_loader_new = st.number_input("Loader New Loc Days", value=0, key="lnl_d")
-        p_loader_new = st.number_input("Loader New Loc Rate", value=0, key="lnl_p")
-        f_loader_new = st.number_input("Fuel (L/Day)", value=225, key="lnl_f")
+        n_lnl = st.number_input("Loader New Loc Qty", 0, key="n_lnl")
+        d_lnl = st.number_input("Loader Days (New Loc)", 0, key="d_lnl")
+        p_lnl = st.number_input("Loader Rate (New Loc)", 0, key="p_lnl")
+        f_lnl = st.number_input("Fuel (L/Day)", 225, key="f_lnl")
 
     st.write("---")
-    st.write("### New Location Personnel")
-    col7, col8 = st.columns(2)
-    with col7:
-        n_tp_new = st.number_input("Truck Pusher (New) Qty", value=0, key="tpn_q")
-        d_tp_new = st.number_input("TP Days (New)", value=0, key="tpn_d")
-        p_tp_new = st.number_input("TP Rate (New)", value=0, key="tpn_p")
-    with col8:
-        n_safety_new = st.number_input("Safety Man (New) Qty", value=0, key="smn_q")
-        d_safety_new = st.number_input("Safety Days (New)", value=0, key="smn_d")
-        p_safety_new = st.number_input("Safety Rate (New)", value=0, key="smn_p")
+    st.write("### Personnel (New Loc)")
+    c7, c8 = st.columns(2)
+    with c7:
+        n_tpn = st.number_input("Truck Pusher (New) Qty", 0, key="n_tpn")
+        d_tpn = st.number_input("TP Days (New)", 0, key="d_tpn")
+        p_tpn = st.number_input("TP Day Rate", 0, key="p_tpn")
+        n_rn = st.number_input("Rigger (New) Qty", 0, key="n_rn")
+        d_rn = st.number_input("Rigger Days (New)", 0, key="d_rn")
+        p_rn = st.number_input("Rigger Day Rate", 0, key="p_rn")
+    with c8:
+        n_sn = st.number_input("Safety Man (New) Qty", 0, key="n_sn")
+        d_sn = st.number_input("Safety Days (New)", 0, key="d_sn")
+        p_sn = st.number_input("Safety Day Rate", 0, key="p_sn")
 
-# --- 5. Final Calculation ---
+# --- 5. Precision Logic & Charts ---
 st.write("<br>", unsafe_allow_html=True)
-if st.button("🚀 CALCULATE & GENERATE DETAILED REPORT"):
-    # Fuel Summation
-    fuel_l = (n_lowbed * dist * 1.57) + (n_flat_move * dist * 1.39) + \
-             (n_tanker * d_tanker * f_tanker) + \
-             (n_crane_old * d_crane_old * f_crane_old) + \
-             (n_loader_old * d_loader_old * f_loader_old) + \
-             (n_crane_rigup * d_crane_rigup * f_crane_rigup) + \
-             (n_loader_rigup * d_loader_rigup * f_loader_rigup) + \
-             (n_crane_new * d_crane_new * f_crane_new) + \
-             (n_loader_new * d_loader_new * f_loader_new)
+if st.button("🚀 CALCULATE & GENERATE RIG MOVE ANALYTICS"):
+    # Fuel Calculation (Distance * 2 for Round Trip)
+    fuel_transport = ((n_lb * (dist * 2) * 1.57) + (n_fb * (dist * 2) * 1.39)) * d_price
+    fuel_equip = ((n_dt*d_dt*f_dt) + (n_co*d_co*f_co) + (n_lo*d_lo*f_lo) + 
+                  (n_cru*d_cru*f_cru) + (n_lru*d_lru*f_lru) + 
+                  (n_cnl*d_cnl*f_cnl) + (n_lnl*d_lnl*f_lnl)) * d_price
     
-    fuel_total_cost = fuel_l * d_price
+    total_fuel_cost = fuel_transport + fuel_equip
+    total_fuel_litres = total_fuel_cost / d_price if d_price > 0 else 0
     
-    # Rental/Labour Summation
-    rent_total = (n_lowbed*p_lowbed) + (n_flat_move*p_flat_move) + (n_workshop*d_workshop*p_workshop) + (n_tanker*d_tanker*p_tanker) + \
-                 (n_crane_old*d_crane_old*p_crane_old) + (n_loader_old*d_loader_old*p_loader_old) + (n_rigger_old*d_rigger_old*p_rigger_old) + \
-                 (n_tp_old*d_tp_old*p_tp_old) + (n_safety_old*d_safety_old*p_safety_old) + \
-                 (n_crane_rigup*d_crane_rigup*p_crane_rigup) + (n_loader_rigup*d_loader_rigup*p_loader_rigup) + \
-                 (n_crane_new*d_crane_new*p_crane_new) + (n_loader_new*d_loader_new*p_loader_new) + \
-                 (n_tp_new*d_tp_new*p_tp_new) + (n_safety_new*d_safety_new*p_safety_new)
+    # Rental & Labor Calculation
+    rent_rig_move = (n_lb*p_lb) + (n_fb*p_fb) + (n_ws*d_ws*p_ws) + (n_dt*d_dt*p_dt)
+    rent_old_loc = (n_co*d_co*p_co) + (n_lo*d_lo*p_lo) + (n_tpo*d_tpo*p_tpo) + (n_so*d_so*p_so) + (n_ro*d_ro*p_ro)
+    rent_new_loc = (n_cru*d_cru*p_cru) + (n_lru*d_lru*p_lru) + (n_cnl*d_cnl*p_cnl) + (n_lnl*d_lnl*p_lnl) + \
+                   (n_tpn*d_tpn*p_tpn) + (n_sn*d_sn*p_sn) + (n_rn*d_rn*p_rn)
+    
+    total_rental_cost = rent_rig_move + rent_old_loc + rent_new_loc
+    grand_total = total_fuel_cost + total_rental_cost
 
-    grand_total = fuel_total_cost + rent_total
-
+    # Display Results
     st.markdown(f"""
         <div class="neon-card">
-            <h2 style="color:#00ffcc; margin:0; font-size: 22px;">TOTAL BUDGET ESTIMATION</h2>
-            <h1 style="font-size: 60px; color:#00ffcc; margin: 10px 0;">{grand_total:,.2f} SAR</h1>
-            <p style="color:white; margin:0; font-size: 18px;">Total Fuel: {fuel_l:,.2f} Litres | Total Rental: {rent_total:,.2f} SAR</p>
+            <h1 style="font-size: 65px; margin:0;">{grand_total:,.2f} SAR</h1>
+            <p style="font-size: 22px; color:white;">Grand Total Budget for {rig_name}</p>
+            <hr style="border: 1px solid #00ffcc;">
+            <div style="display: flex; justify-content: space-around;">
+                <div><p>Fuel Component</p><h3>{total_fuel_cost:,.2f} SAR</h3></div>
+                <div><p>Rental/Labor Component</p><h3>{total_rental_cost:,.2f} SAR</h3></div>
+                <div><p>Total Diesel</p><h3>{total_fuel_litres:,.2f} L</h3></div>
+            </div>
         </div>
     """, unsafe_allow_html=True)
 
-    # Excel Generation
-    report_df = pd.DataFrame({
-        "Item": ["Rig Name", "Location", "Fuel Cost", "Rental Cost", "Grand Total"],
-        "Details": [rig_name, location_name, f"{fuel_total_cost:,.2f} SAR", f"{rent_total:,.2f} SAR", f"{grand_total:,.2f} SAR"]
+    # --- Charts Section ---
+    st.write("### 📊 Budget Distribution Analytics")
+    col_chart1, col_chart2 = st.columns(2)
+    
+    # Chart 1: Fuel vs Rental
+    pie_data = pd.DataFrame({"Category": ["Fuel Cost", "Rental & Labor"], "Value": [total_fuel_cost, total_rental_cost]})
+    fig1 = px.pie(pie_data, values='Value', names='Category', hole=0.4, 
+                 color_discrete_sequence=['#00ffcc', '#007bff'], title="Total Budget Split")
+    fig1.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="white")
+    col_chart1.plotly_chart(fig1, use_container_width=True)
+    
+    # Chart 2: Section-wise Spending
+    bar_data = pd.DataFrame({
+        "Section": ["Rig Move Fleet", "Old Location", "New Location"],
+        "Amount (SAR)": [rent_rig_move + fuel_transport, rent_old_loc, rent_new_loc]
     })
+    fig2 = px.bar(bar_data, x='Section', y='Amount (SAR)', color='Section',
+                 color_discrete_sequence=['#00ffcc', '#007bff', '#ff00ff'], title="Spending by Project Phase")
+    fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font_color="white")
+    col_chart2.plotly_chart(fig2, use_container_width=True)
+
+    # --- Excel Export ---
+    excel_data = {
+        "Item Category": ["Grand Total", "Total Fuel", "Rig Move Phase", "Old Loc Phase", "New Loc Phase"],
+        "Details": [f"{grand_total:,.2f} SAR", f"{total_fuel_litres:,.2f} Litres", f"{rent_rig_move:,.2f} SAR", f"{rent_old_loc:,.2f} SAR", f"{rent_new_loc:,.2f} SAR"]
+    }
+    df_excel = pd.DataFrame(excel_data)
     buffer = io.BytesIO()
     with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-        report_df.to_excel(writer, index=False)
-    st.download_button("📥 DOWNLOAD EXCEL REPORT", buffer.getvalue(), f"KTS_{rig_name}.xlsx", "application/vnd.ms-excel")
+        df_excel.to_excel(writer, index=False, sheet_name='KTS_Summary')
+    st.download_button("📥 DOWNLOAD DETAILED AUDIT REPORT (EXCEL)", buffer.getvalue(), f"KTS_Final_{rig_name}.xlsx", "application/vnd.ms-excel")
 
-# --- 6. Footer ---
+# --- 6. Final Signature ---
 st.write("<br><br>")
 st.markdown(f"""
     <div style='text-align: center; border-top: 3px solid #00ffcc; padding-top: 30px;'>
-        <h1 class="shiny-text" style='font-size: 50px;'>Ahmed Mugali</h1>
-        <p style='color: #ffffff; font-size: 16px; letter-spacing: 2px;'>KTS LOGISTICS MASTER SYSTEM © 2026</p>
+        <h1 class="shiny-text" style='font-size: 55px;'>Ahmed Mugali</h1>
+        <p style='color: #ffffff; font-size: 16px; letter-spacing: 2px;'>KTS LOGISTICS MASTER SYSTEM v4.0 © 2026</p>
     </div>
 """, unsafe_allow_html=True)
