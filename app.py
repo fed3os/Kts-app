@@ -46,7 +46,7 @@ with st.expander("➕ Trucks for rig move (flatbed and Lowbed)"):
         st.write("### Support & Tanker")
         n_ws = st.number_input("Workshop Team Qty", 0, key="ws_q")
         d_ws = st.number_input("Workshop Days", 0, key="ws_d")
-        p_ws = st.number_input("Workshop Rate", 0, key="p_ws")
+        p_ws = st.number_input("Workshop Rate", 0, key="ws_p")
         n_dt = st.number_input("Diesel Tanker Qty", 0, key="dt_q")
         d_dt = st.number_input("Tanker Days", 0, key="dt_d")
         p_dt = st.number_input("Tanker Rate", 0, key="dt_p")
@@ -79,29 +79,32 @@ with st.expander("➕ Equipment for old location (crane rigger FL truck pusher s
 
 # --- SECTION 3: Equipment for new location ---
 with st.expander("➕ Equipment for new location"):
-    c6_1, c6_2 = st.columns(2)
-    with c6_1:
-        st.write("### New Loc Support")
-        n_cnl = st.number_input("Crane New Qty", 0, key="cnl_q")
-        d_cnl = st.number_input("Days", 0, key="cnl_d")
-        p_cnl = st.number_input("Rate", 0, key="cnl_p")
-        f_cnl = st.number_input("Fuel L/D", 225, key="cnl_f")
-    with c6_2:
-        n_lnl = st.number_input("Loader New Qty", 0, key="lnl_q")
-        d_lnl = st.number_input("Days", 0, key="lnl_d")
-        p_lnl = st.number_input("Rate", 0, key="lnl_p")
-        f_lnl = st.number_input("Fuel L/D", 225, key="lnl_f")
-    
-    st.write("---")
-    c7, c8 = st.columns(2)
-    with c7:
-        n_tpn = st.number_input("TP New Qty", 0, key="tpn_q")
-        d_tpn = st.number_input("TP Days", 0, key="tpn_d")
-        p_tpn = st.number_input("TP Rate", 0, key="tpn_p")
-    with c8:
-        n_sn = st.number_input("Safety New Qty", 0, key="sn_q")
-        d_sn = st.number_input("Safety Days", 0, key="sn_d")
-        p_sn = st.number_input("Safety Rate", 0, key="sn_p")
+    c_new_1, c_new_2 = st.columns(2)
+    with c_new_1:
+        st.write("### Heavy Equipment (New)")
+        n_cnl = st.number_input("Crane New Loc Qty", 0, key="cnl_q")
+        d_cnl = st.number_input("Crane Days (New Loc)", 0, key="cnl_d")
+        p_cnl = st.number_input("Crane Rate (New Loc)", 0, key="cnl_p")
+        f_cnl = st.number_input("Crane Fuel L/D (New)", 225, key="cnl_f")
+        st.write("---")
+        # الريجر تحت الكرين كما طلبت
+        n_rn = st.number_input("Rigger New Loc Qty", 0, key="rn_q")
+        d_rn = st.number_input("Rigger Days (New Loc)", 0, key="rn_d")
+        p_rn = st.number_input("Rigger Rate (New Loc)", 0, key="rn_p")
+        
+    with c_new_2:
+        st.write("### Loader & Personnel (New)")
+        n_lnl = st.number_input("Loader New Loc Qty", 0, key="lnl_q")
+        d_lnl = st.number_input("Loader Days (New Loc)", 0, key="lnl_d")
+        p_lnl = st.number_input("Loader Rate (New Loc)", 0, key="lnl_p")
+        f_lnl = st.number_input("Loader Fuel L/D (New)", 225, key="lnl_f")
+        st.write("---")
+        n_tpn = st.number_input("TP New Loc Qty", 0, key="tpn_q")
+        d_tpn = st.number_input("TP Days (New Loc)", 0, key="tpn_d")
+        p_tpn = st.number_input("TP Rate (New Loc)", 0, key="tpn_p")
+        n_sn = st.number_input("Safety New Loc Qty", 0, key="sn_q")
+        d_sn = st.number_input("Safety Days (New Loc)", 0, key="sn_d")
+        p_sn = st.number_input("Safety Rate (New Loc)", 0, key="sn_p")
 
 # --- SECTION 4: Equipment for rig up ---
 with st.expander("➕ Equipment for rig up"):
@@ -126,11 +129,11 @@ if st.button("🚀 CALCULATE & GENERATE ANALYTICS"):
                (n_cru*d_cru*f_cru) + (n_lru*d_lru*f_lru) + (n_cnl*d_cnl*f_cnl) + (n_lnl*d_lnl*f_lnl)) * diesel_price
     total_fuel = f_trans + f_equip
     
-    # الإيجارات
+    # الإيجارات والرواتب
     rent_total = (n_lb*p_lb) + (n_fb*p_fb) + (n_ws*d_ws*p_ws) + (n_dt*d_dt*p_dt) + \
                  (n_co*d_co*p_co) + (n_lo*d_lo*p_lo) + (n_tpo*d_tpo*p_tpo) + (n_so*d_so*p_so) + (n_ro*d_ro*p_ro) + \
-                 (n_cru*d_cru*p_cru) + (n_lru*d_lru*p_lru) + (n_cnl*d_cnl*p_cnl) + (n_lnl*d_lnl*p_lnl) + \
-                 (n_tpn*d_tpn*p_tpn) + (n_sn*d_sn*p_sn)
+                 (n_cnl*d_cnl*p_cnl) + (n_lnl*d_lnl*p_lnl) + (n_rn*d_rn*p_rn) + (n_tpn*d_tpn*p_tpn) + (n_sn*d_sn*p_sn) + \
+                 (n_cru*d_cru*p_cru) + (n_lru*d_lru*p_lru)
     
     grand_total = total_fuel + rent_total
 
@@ -140,14 +143,16 @@ if st.button("🚀 CALCULATE & GENERATE ANALYTICS"):
     st.write("### 📊 Budget Breakdown")
     col_ch1, col_ch2 = st.columns(2)
     
+    # الرسم البياني الأول
     fig1 = px.pie(values=[total_fuel, rent_total], names=['Fuel Cost', 'Rental & Labor'], hole=0.4,
                  color_discrete_sequence=['#00ffcc', '#007bff'], title="Cost Distribution")
     fig1.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color="white")
     col_ch1.plotly_chart(fig1, use_container_width=True)
 
+    # الرسم البياني الثاني
     sec_data = pd.DataFrame({
         "Section": ["Rig Move", "Old Loc", "New Loc", "Rig Up"],
-        "Amount": [(f_trans + n_lb*p_lb + n_fb*p_fb), (n_co*d_co*p_co + n_lo*d_lo*p_lo), (n_cnl*d_cnl*p_cnl + n_lnl*d_lnl*p_lnl), (n_cru*d_cru*p_cru + n_lru*d_lru*p_lru)]
+        "Amount": [(f_trans + n_lb*p_lb + n_fb*p_fb), (n_co*d_co*p_co + n_lo*d_lo*p_lo), (n_cnl*d_cnl*p_cnl + n_lnl*d_lnl*p_lnl + n_rn*d_rn*p_rn), (n_cru*d_cru*p_cru + n_lru*d_lru*p_lru)]
     })
     fig2 = px.bar(sec_data, x='Section', y='Amount', color='Section', title="Phase Spending Analysis")
     fig2.update_layout(paper_bgcolor="rgba(0,0,0,0)", font_color="white")
